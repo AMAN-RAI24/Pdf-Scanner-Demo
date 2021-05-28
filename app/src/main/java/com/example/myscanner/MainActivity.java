@@ -13,12 +13,14 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import com.scanlibrary.PickImageFragment;
 import com.scanlibrary.ScanActivity;
 import com.scanlibrary.ScanConstants;
 
@@ -48,10 +50,10 @@ public class MainActivity extends AppCompatActivity {
         scannedImageView = (ImageView) findViewById(R.id.scannedImage);
     }
 
-    private class ScanButtonClickListener implements View.OnClickListener {
+
+    private class ScanButtonClickListener extends Intent implements View.OnClickListener {
 
         private int preference;
-
         public ScanButtonClickListener(int preference) {
             this.preference = preference;
         }
@@ -61,50 +63,52 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onClick(View v) {
+            Log.d("onclick",String.valueOf(preference));
             startScan(preference);
         }
     }
+
     protected void startScan(int preference) {
         Intent intent = new Intent(this, ScanActivity.class);
         intent.putExtra(ScanConstants.OPEN_INTENT_PREFERENCE, preference);
-        //someActivityResultLauncher.launch(intent);
-        startActivityForResult(intent, REQUEST_CODE);
+        someActivityResultLauncher.launch(intent);
+        //startActivityForResult(intent, REQUEST_CODE);
     }
 
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            Uri uri = data.getExtras().getParcelable(ScanConstants.SCANNED_RESULT);
-            Bitmap bitmap = null;
-            try {
-                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                getContentResolver().delete(uri, null, null);
-                scannedImageView.setImageBitmap(bitmap);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//        if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+//            Uri uri = data.getExtras().getParcelable(ScanConstants.SCANNED_RESULT);
+//            Bitmap bitmap = null;
+//            try {
+//                bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+//                getContentResolver().delete(uri, null, null);
+//                scannedImageView.setImageBitmap(bitmap);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
 
-//        ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(
-//            new ActivityResultContracts.StartActivityForResult(),
-//            new ActivityResultCallback<ActivityResult>() {
-//                @Override
-//                public void onActivityResult(ActivityResult result) {
-//                    if (result.getResultCode() == Activity.RESULT_OK) {
-//                        // There are no request codes
-//                        Uri uri = result.getData().getExtras().getParcelable(ScanConstants.SCANNED_RESULT);
-//                        Bitmap bitmap = null;
-//                        try {
-//                            bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-//                            getContentResolver().delete(uri, null, null);
-//                            //scannedImageView.setImageBitmap(bitmap);
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }
-//            });
+        ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult result) {
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        // There are no request codes
+                        Uri uri = result.getData().getExtras().getParcelable(ScanConstants.SCANNED_RESULT);
+                        Bitmap bitmap = null;
+                        try {
+                            bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                            getContentResolver().delete(uri, null, null);
+                            scannedImageView.setImageBitmap(bitmap);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
 
 
     private Bitmap convertByteArrayToBitmap(byte[] data) {
